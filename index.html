@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Avaliação – Chula em Dupla</title>
+<style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 10px; transition: background-color 0.5s ease; background-color: #333; }
+    body.tema-c1 { --cor-destaque: #2196f3;background-color: #2196f3; } 
+    body.tema-c2 { --cor-destaque: #4caf50;background-color: #4caf50; }
+
+    #telaLogin { position: fixed; top:0; left:0; width:100%; height:100%; background:#222; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:9999; color:white; }
+    #telaLogin input { padding:12px; margin:5px; width:250px; border:none; border-radius:4px; }
+    #telaLogin button { padding:12px 60px; background:#fc7a00; border:none; font-weight:bold; cursor:pointer; margin-top:10px; border-radius:4px; }
+
+    #appContainer { display:none; max-width: auto; margin: auto; background: #fff; border: 2px solid #000; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+    .header { background: #ffe066; border-bottom: 2px solid #000; padding: 10px; display:grid; grid-template-columns:100px 1fr 100px; align-items:center; }
+    .tab-container { display: flex; background: #333; border-bottom: 2px solid #000; }
+    .tab-button { flex: 1; padding: 15px; border: none; cursor: pointer; color: white; font-weight: bold; background: #444; }
+    .tab-button.active-c1 { background: #2196f3; }
+    .tab-button.active-c2 { background: #4caf50; }
+    .aba-conteudo { display: none; padding: 15px; }
+    .aba-conteudo.active { display: block; }
+    .linha-info { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; padding: 10px; background: #f9f9f9; border: 1px solid #000; margin-top: 5px; font-size: 11px; }
+    .linha-info b { color: #d32f2f; display: block; font-size: 12px; }
+    .titulo-secao { background: var(--cor-destaque, #333); color: #fff; padding: 8px; font-weight: bold; text-transform: uppercase; margin-top: 15px; }
+    .tabela-passos { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 10px; }
+    .tabela-passos th, .tabela-passos td { border: 1px solid #000; padding: 4px; text-align: center; }
+    .bg-amarelo { background: #ffe066; font-weight: bold; }
+    .input-passo { width: 35px; text-align: center; font-weight: bold; }
+    .grid-resumo { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .box { border: 2px solid #000; padding: 8px; background: #fdfdfd; }
+    .nota-destaque { font-size: 28px; font-weight: bold; color: #d32f2f; text-align: center; }
+    .btns { display: flex; justify-content: center; padding: 20px; gap: 20px; background: #eee; }
+    .btn-salvar { background: #fc7a00; padding: 15px 30px; font-size: 18px; font-weight: bold; cursor: pointer; }
+    .btn-logout{background:#ff4444; color:#fff; border:2px solid #000; border-radius:6px; font-size: 12px !important; padding: 5px 15px !important;}
+
+</style>
+</head>
+<body>
+
+    <div id="telaLogin">
+        <img src="https://raw.githubusercontent.com/CCN1989/Imagens/refs/heads/main/Logo%20pequeno.png" height="80">
+        <h2>ACESSO AVALIADOR</h2>
+        <input type="text" id="userLogin" placeholder="Usuário">
+        <input type="password" id="passLogin" placeholder="Senha">
+        <button onclick="fazerLogin()">ENTRAR</button>
+    </div>
+
+    <div id="appContainer">
+        <div class="header">
+            <img src="https://raw.githubusercontent.com/CCN1989/Imagens/refs/heads/main/Logo%20pequeno.png" height="50">
+            <div style="text-align:center">
+                <strong>25º Rodeio Nativista de Esteio</strong><br>
+                <span>Planilha Avaliação - CHULA</span>
+            </div>
+            <img src="https://github.com/CCN1989/Imagens/blob/main/12RT.png?raw=true" height="50">
+        </div>
+
+        <div class="tab-container">
+            <button id="btnTab1" class="tab-button active-c1" onclick="abrirAba('aba1', 'c1')">CHULEADOR 1</button>
+            <button id="btnTab2" class="tab-button" onclick="abrirAba('aba2', 'c2')">CHULEADOR 2</button>
+        </div>
+
+        <div id="aba1" class="aba-conteudo active"></div>
+        <div id="aba2" class="aba-conteudo"></div>
+
+        <div class="btns">
+            <button onclick="location.reload()" style="cursor:pointer" class="btn-logout">Sair</button>
+            <button id="btnFinal" onclick="salvarDupla()" class="btn-salvar">SALVAR AVALIAÇÃO DA DUPLA</button>
+        </div>
+
+        <div style="display:flex; justify-content: space-around; padding: 10px; font-size: 12px; background: #f0f0f0;">
+            <span>Data: <span id="exibirData"></span></span>
+            <span>Avaliador: <b id="nomeExibicao"></b></span>
+        </div>
+    </div>
+
+<script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz8-jjyQFhARSSwcQPrLJRLIgLB9EBimxArMP7lkIVVOsfSlHDR61ucJhTT580STbQ3/exec"; 
+const passos = [1,2,3,4,5,6,7,8,9,10];
+let usuarioAtivo = { user: "", nome: "" };
+
+function gerarHTMLFormulario(p) {
+    return `
+        <div style="padding:10px; background:#ffe066; border:1px solid #000;">
+            <select id="${p}_codigo" onchange="buscarCandidato(this, '${p}')" style="width:100%; padding:8px; font-weight:bold;">
+                <option value="">Selecione CÓDIGO do candidato</option>
+            </select>
+        </div>
+        <div class="linha-info">
+            <div>Concorrente:<br><b id="${p}_concorrente">---</b></div>
+            <div>Categoria:<br><b id="${p}_categoria">---</b></div>
+            <div>Entidade:<br><b id="${p}_entidade">---</b></div>
+            <div>Município:<br><b id="${p}_municipio">---</b></div>
+            <div>RT:<br><b id="${p}_rt">---</b></div>
+        </div>
+
+        <div class="titulo-secao">Pontos Ganhos</div>
+        <table class="tabela-passos">
+            <tr><th>Critérios</th>${passos.map(i=>`<th>${i}</th>`).join('')}<th class="bg-amarelo">Total</th></tr>
+            <tr><td>Notas</td>${passos.map(i=>`<td><input type="text" class="input-passo" id="${p}_pg${i}" data-max="10" onblur="validar(this,'${p}')"></td>`).join('')}
+            <td class="bg-amarelo" id="${p}_totalGanhos">0,00</td></tr>
+        </table>
+
+        <div class="titulo-secao">Perda Total (Anula o passo)</div>
+        <table class="tabela-passos">
+            ${["Não concluir 50%","16 compassos","Figuras não tradic.","Repetir passo","Acessórios indev."].map(motivo => `
+                <tr><td style="text-align:left">${motivo}</td>${passos.map(i=>`<td><input type="checkbox" class="${p}_anula" data-col="${i}" data-motivo="${motivo}" onclick="calc('${p}')"></td>`).join('')}</tr>
+            `).join('')}
+        </table>
+
+        <div class="titulo-secao">Perda Parcial</div>
+        <table class="tabela-passos">
+            ${["Tocar lança (3)","Imperfeição (3)","Ritmo (2)","Variante (1)","Erro Prep. (1)"].map((motivo, idx) => `
+                <tr><td style="text-align:left">${motivo}</td>${passos.map(i=>`<td><input type="text" class="input-passo ${p}_perda" data-col="${i}" data-idx="${idx+1}" data-max="${[3,3,2,1,1][idx]}" onblur="validar(this,'${p}')"></td>`).join('')}</tr>
+            `).join('')}
+            <tr class="bg-amarelo"><td>SOMA PARCIAL</td>${passos.map(i=>`<td id="${p}_soma_p${i}">0,00</td>`).join('')}</tr>
+        </table>
+
+        <div class="box" style="background:#fdd; border: 2px solid #000; display: flex; justify-content: space-between; align-items: center; margin-top:10px;">
+            <div><strong>DESCONTO EXTRA:</strong> <input type="text" id="${p}_extra" data-max="3" value="0,00" style="width:40px; text-align:center;" onblur="validar(this, '${p}')"></div>
+            <div><strong>USO DE ESPORAS?</strong> <input type="checkbox" id="${p}_esporas"> Sim</div>
+        </div>
+
+        <div class="grid-resumo">
+            <div class="box">Obs:<br><textarea id="${p}_obs" style="width:95%; height:40px;"></textarea></div>
+            <div class="box" style="text-align:center">Indum:<br><input type="text" id="${p}_indum" data-max="2" value="0,00" style="width:40px;" onblur="validar(this,'${p}')"></div>
+            <div class="box">TOTAL FINAL<div class="nota-destaque" id="${p}_notaFinal">0,00</div></div>
+        </div>
+    `;
+}
+
+function fazerLogin() {
+    const btnLogin = document.querySelector("#telaLogin button");
+    const user = document.getElementById("userLogin").value;
+    const pass = document.getElementById("passLogin").value;
+
+    if(!user || !pass) { alert("Preencha usuário e senha!"); return; }
+
+    btnLogin.disabled = true;
+    btnLogin.innerText = "VERIFICANDO...";
+
+    fetch(SCRIPT_URL, { 
+        method: "POST", 
+        body: JSON.stringify({ acao: "login", user, pass }) 
+    })
+    .then(r => r.json())
+    .then(res => {
+        if(res.success) {
+            usuarioAtivo = { user: user, nome: res.nome };
+            document.getElementById("nomeExibicao").innerText = res.nome;
+            document.getElementById("exibirData").innerText = new Date().toLocaleDateString();
+            document.getElementById("telaLogin").style.display = "none";
+            document.getElementById("appContainer").style.display = "block";
+            carregarCandidatos();
+        } else {
+            alert("Usuário ou senha inválidos!");
+            btnLogin.disabled = false;
+            btnLogin.innerText = "ENTRAR";
+        }
+    })
+    .catch(() => {
+        alert("Erro de conexão com o servidor.");
+        btnLogin.disabled = false;
+        btnLogin.innerText = "ENTRAR";
+    });
+}
+
+function carregarCandidatos() {
+    fetch(SCRIPT_URL + "?acao=candidatos").then(r => r.json()).then(lista => {
+        window.listaCandGlobal = lista;
+        ['c1','c2'].forEach(p => {
+            let sel = document.getElementById(`${p}_codigo`);
+            lista.forEach(c => sel.innerHTML += `<option value="${c.codigo}">${c.codigo}</option>`);
+        });
+    });
+}
+
+function buscarCandidato(el, p) {
+    let c = window.listaCandGlobal.find(x => String(x.codigo) === String(el.value));
+    if(!c) return;
+    document.getElementById(`${p}_concorrente`).innerText = c.concorrente;
+    document.getElementById(`${p}_categoria`).innerText = c.categoria;
+    document.getElementById(`${p}_entidade`).innerText = c.entidade;
+    document.getElementById(`${p}_municipio`).innerText = c.municipio;
+    document.getElementById(`${p}_rt`).innerText = c.rt;
+}
+
+function salvarDupla() {
+    const cod1 = document.getElementById('c1_codigo').value;
+    const cod2 = document.getElementById('c2_codigo').value;
+
+    if (!cod1 || !cod2) {
+        alert("ERRO: Selecione o CÓDIGO do candidato em AMBAS as abas antes de salvar.");
+        return;
+    }
+
+    if(!confirm("Deseja confirmar o envio da avaliação desta dupla?")) return;
+
+    const btnFinal = document.getElementById("btnFinal");
+    btnFinal.disabled = true;
+    btnFinal.innerText = "ENVIANDO AO GOOGLE SHEETS...";
+
+    let payload = ['c1','c2'].map(p => {
+        let perdasDet = [];
+        document.querySelectorAll(`.${p}_anula:checked`).forEach(ck => {
+            perdasDet.push(`P${ck.dataset.col}: ${ck.dataset.motivo}`);
+        });
+
+        let d = {
+            userLogin: usuarioAtivo.user,
+            nomeExibicao: usuarioAtivo.nome,
+            codigo: document.getElementById(`${p}_codigo`).value,
+            concorrente: document.getElementById(`${p}_concorrente`).innerText,
+            categoria: document.getElementById(`${p}_categoria`).innerText,
+            entidade: document.getElementById(`${p}_entidade`).innerText,
+            municipio: document.getElementById(`${p}_municipio`).innerText,
+            rt: document.getElementById(`${p}_rt`).innerText,
+            totalGanhos: document.getElementById(`${p}_totalGanhos`).innerText,
+            perdaTotalDesc: perdasDet.join(" | "),
+            extra: document.getElementById(`${p}_extra`).value,
+            obs: document.getElementById(`${p}_obs`).value,
+            indum: document.getElementById(`${p}_indum`).value,
+            notaFinal: document.getElementById(`${p}_notaFinal`).innerText,
+            esporas: document.getElementById(`${p}_esporas`).checked ? "SIM" : "NÃO"
+        };
+
+        passos.forEach(i => d[`notap${i}`] = document.getElementById(`${p}_pg${i}`).value || "0,00");
+        
+        for(let i=1; i<=10; i++) {
+            for(let j=1; j<=5; j++) {
+                let inp = document.querySelector(`.${p}_perda[data-col="${i}"][data-idx="${j}"]`);
+                d[`pp${j}_${i}`] = inp ? inp.value : "0,00";
+            }
+        }
+
+        let somaP = 0;
+        passos.forEach(i => {
+            somaP += parseFloat(document.getElementById(`${p}_soma_p${i}`).innerText.replace(',','.')) || 0;
+        });
+        d.somaPerdas = somaP.toFixed(2).replace('.',',');
+        
+        return d;
+    });
+
+    fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify({ acao: "salvar", payload }) })
+    .then(r => r.json())
+    .then(res => {
+        if(res.success) {
+            alert("AVALIAÇÃO SALVA COM SUCESSO!");
+            // Forçamos o reset total do HTML
+            limparFormularios(); 
+        } else {
+            alert("Erro ao salvar: " + res.error);
+        }
+    })
+    .catch(err => alert("Erro de conexão: " + err))
+    .finally(() => {
+        btnFinal.disabled = false;
+        btnFinal.innerText = "SALVAR AVALIAÇÃO DA DUPLA";
+    });
+}
+
+function limparFormularios() {
+    ['c1', 'c2'].forEach(p => {
+        // Reset do Select de Código
+        const selectCod = document.getElementById(`${p}_codigo`);
+        if(selectCod) selectCod.selectedIndex = 0;
+
+        // Reset das Labels de texto
+        const labels = ['concorrente', 'categoria', 'entidade', 'municipio', 'rt'];
+        labels.forEach(l => {
+            const el = document.getElementById(`${p}_${l}`);
+            if(el) el.innerText = "---";
+        });
+
+        // Reset de todos os inputs de texto e números
+        document.querySelectorAll(`#aba1 input, #aba2 input, #aba1 textarea, #aba2 textarea`).forEach(input => {
+            if (input.type === "text" || input.tagName === "TEXTAREA") {
+                // Se for nota (max 10), limpa. Se for perda, volta pra 0,00
+                input.value = input.dataset.max === "10" ? "" : "0,00";
+            } else if (input.type === "checkbox") {
+                input.checked = false;
+            }
+        });
+
+        // Reset dos campos de Total que não são inputs (são <td> ou <div>)
+        document.getElementById(`${p}_totalGanhos`).innerText = "0,00";
+        document.getElementById(`${p}_notaFinal`).innerText = "0,00";
+        for(let i=1; i<=10; i++) {
+            const somaCol = document.getElementById(`${p}_soma_p${i}`);
+            if(somaCol) somaCol.innerText = "0,00";
+        }
+    });
+
+    // Volta para a Aba 1 e topo da página
+    abrirAba('aba1', 'c1');
+    window.scrollTo(0,0);
+}
+
+function abrirAba(id, pref) {
+    document.querySelectorAll('.aba-conteudo').forEach(a => a.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.getElementById('btnTab1').className = 'tab-button' + (pref=='c1'?' active-c1':'');
+    document.getElementById('btnTab2').className = 'tab-button' + (pref=='c2'?' active-c2':'');
+    document.body.className = 'tema-' + pref;
+}
+
+function validar(campo, p) {
+    let val = parseFloat(campo.value.replace(',', '.')) || 0;
+    let max = parseFloat(campo.getAttribute('data-max'));
+    
+    if (val > max) {
+        alert("ALERTA: O valor digitado (" + val.toFixed(2).replace('.', ',') + 
+              ") excede o limite permitido de " + max.toFixed(2).replace('.', ',') + ".");
+        val = max;
+    }
+    campo.value = val.toFixed(2).replace('.', ',');
+    calc(p);
+}
+
+function calc(p) {
+    let tg = 0, td = 0;
+    passos.forEach(i => {
+        let anulado = document.querySelector(`.${p}_anula[data-col="${i}"]:checked`);
+        let n = parseFloat(document.getElementById(`${p}_pg${i}`).value.replace(',','.')) || 0;
+        let pCol = 0;
+        document.querySelectorAll(`.${p}_perda[data-col="${i}"]`).forEach(inp => pCol += parseFloat(inp.value.replace(',','.')) || 0);
+        document.getElementById(`${p}_soma_p${i}`).innerText = pCol.toFixed(2).replace('.',',');
+        if(!anulado) { tg += n; td += pCol; }
+    });
+    let ex = parseFloat(document.getElementById(`${p}_extra`).value.replace(',','.')) || 0;
+    let ind = parseFloat(document.getElementById(`${p}_indum`).value.replace(',','.')) || 0;
+    document.getElementById(`${p}_totalGanhos`).innerText = tg.toFixed(2).replace('.',',');
+    document.getElementById(`${p}_notaFinal`).innerText = (tg - td - ex - ind).toFixed(2).replace('.',',');
+}
+
+window.onload = () => {
+    document.getElementById('aba1').innerHTML = gerarHTMLFormulario('c1');
+    document.getElementById('aba2').innerHTML = gerarHTMLFormulario('c2');
+};
+</script>
+    
+</body>
+</html>
