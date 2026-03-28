@@ -50,7 +50,7 @@
         <div class="header">
             <img src="https://raw.githubusercontent.com/CCN1989/Imagens/refs/heads/main/Logo%20pequeno.png" height="50">
             <div style="text-align:center">
-                <strong>25º Rodeio Nativista de Esteio</strong><br>
+                <strong>25º Rodeio Nativista de Esteio - Centro de Tradições Gaúchas Chama Nativa</strong><br>
                 <span>Planilha Avaliação - CHULA</span>
             </div>
             <img src="https://github.com/CCN1989/Imagens/blob/main/12RT.png?raw=true" height="50">
@@ -97,36 +97,38 @@ function gerarHTMLFormulario(p) {
 
         <div class="titulo-secao">Pontos Ganhos</div>
         <table class="tabela-passos">
-            <tr><th>Critérios</th>${passos.map(i=>`<th>${i}</th>`).join('')}<th class="bg-amarelo">Total</th></tr>
-            <tr><td>Notas</td>${passos.map(i=>`<td><input type="text" class="input-passo" id="${p}_pg${i}" data-max="10" onblur="validar(this,'${p}')"></td>`).join('')}
+            <tr><th>Passos</th>${passos.map(i=>`<th>${i}</th>`).join('')}<th class="bg-amarelo">Total</th></tr>
+            <tr><td>Criatividade; Interpretação; Dificuldade; Execução.</td>${passos.map(i=>`<td><input type="text" class="input-passo" id="${p}_pg${i}" data-max="10" onblur="validar(this,'${p}')"></td>`).join('')}
             <td class="bg-amarelo" id="${p}_totalGanhos">0,00</td></tr>
         </table>
 
         <div class="titulo-secao">Perda Total (Anula o passo)</div>
         <table class="tabela-passos">
-            ${["Não concluir 50%","16 compassos","Figuras não tradic.","Repetir passo","Acessórios indev."].map(motivo => `
+            <tr><th>Passos</th>${passos.map(i=>`<th>${i}</th>`).join('')}</th></tr>
+            ${["Não concluir pelo menos 50% do passo.","Ultrapassar dezesseis compassos musicais","Executar figuras que não representem a tradicionalidade da dança da chula tais como: salto mortal, parada de mão, estrelinha, cambalhota","Repetir o passo já apresentado por si ou por seu oponente.","Utilizar acessórios que descaracterizem a tradicionalidade da dança da chula, tais como: objetos móveis, instrumentos musicais e armas de qualquer natureza."].map(motivo => `
                 <tr><td style="text-align:left">${motivo}</td>${passos.map(i=>`<td><input type="checkbox" class="${p}_anula" data-col="${i}" data-motivo="${motivo}" onclick="calc('${p}')"></td>`).join('')}</tr>
             `).join('')}
         </table>
 
-        <div class="titulo-secao">Perda Parcial</div>
+        <div class="titulo-secao">Perda Parcial de Pontos</div>
         <table class="tabela-passos">
-            ${["Tocar lança (3)","Imperfeição (3)","Ritmo (2)","Variante (1)","Erro Prep. (1)"].map((motivo, idx) => `
+            <tr><th>Passos</th>${passos.map(i=>`<th>${i}</th>`).join('')}</th></tr>
+            ${["Tocar na lança (deslocando ou não - até -3,00)","Executar passo com imperfeição (até -3,00)","Perder o ritmo musical e erro na execução da música (até -2,00)","Executar passo caracterizado como variante (até -1,00)","Erro na preparação (até -1,00 - após os 16 compassos da preparação  e a cada 4 compassos ultrapssados  será descontado 0,25 pontos)"].map((motivo, idx) => `
                 <tr><td style="text-align:left">${motivo}</td>${passos.map(i=>`<td><input type="text" class="input-passo ${p}_perda" data-col="${i}" data-idx="${idx+1}" data-max="${[3,3,2,1,1][idx]}" onblur="validar(this,'${p}')"></td>`).join('')}</tr>
             `).join('')}
             <tr class="bg-amarelo"><td>SOMA PARCIAL</td>${passos.map(i=>`<td id="${p}_soma_p${i}">0,00</td>`).join('')}</tr>
         </table>
 
         <div class="box" style="background:#fdd; border: 2px solid #000; display: flex; justify-content: space-between; align-items: center; margin-top:10px;">
-            <div><strong>DESCONTO EXTRA:</strong> <input type="text" id="${p}_extra" data-max="3" value="0,00" style="width:40px; text-align:center;" onblur="validar(this, '${p}')"></div>
-            <div><strong>USO DE ESPORAS?</strong> <input type="checkbox" id="${p}_esporas"> Sim</div>
+            <div><strong>DESCONTO EXTRA: Adotar conduta de comportamento indecoroso ao oponente, comissão avaliadora ou ao público, bem como deixar de manter a distância de 1 (um) metro da lança enquanto estiver no momento da apresentação do seu oponente. Enquadra-se também se o concorrente estiver com mais de um acompanhante/instrutor dentro do tablado (exceção ENART). (-3,00)</strong> <input type="text" id="${p}_extra" data-max="3" value="0,00" style="width:40px; text-align:center;" onblur="validar(this, '${p}')"></div>
         </div>
 
         <div class="grid-resumo">
-            <div class="box">Obs:<br><textarea id="${p}_obs" style="width:95%; height:40px;"></textarea></div>
-            <div class="box" style="text-align:center">Indum:<br><input type="text" id="${p}_indum" data-max="2" value="0,00" style="width:40px;" onblur="validar(this,'${p}')"></div>
+            <div class="box">Observações:<br><textarea id="${p}_obs" style="width:95%; height:40px;"></textarea></div>
+            <div class="box" style="text-align:center">Indumentária: Os descontos de seguem orientação dos Art. 19 §1º e §2º do Regulamento<br><input type="text" id="${p}_indum" data-max="2" value="0,00" style="width:40px;" onblur="validar(this,'${p}')"></div>
             <div class="box">TOTAL FINAL<div class="nota-destaque" id="${p}_notaFinal">0,00</div></div>
         </div>
+         <div class="box"style="text-align:center">USO DE ESPORAS?</strong> <input type="checkbox" id="${p}_esporas"> Sim</div>
     `;
 }
 
