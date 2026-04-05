@@ -8,8 +8,15 @@
     body.tema-c1 { --cor-destaque: #2196f3;background-color: #2196f3; } 
     body.tema-c2 { --cor-destaque: #4caf50;background-color: #4caf50; }
 
-    #telaLogin { position: fixed; top:0; left:0; width:100%; height:100%; background:#222; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:9999; color:white; }
-    #telaLogin input { padding:12px; margin:5px; width:250px; border:none; border-radius:4px; }
+   #telaLogin {
+    max-width: 400px;
+    margin: 100px auto;
+    background: #fff;
+    padding: 20px;
+    border: 2px solid #ffffff;
+    text-align: center;
+}
+    #telaLogin input { padding:12px; margin:5px; width:250px; border:none; border: 1px solid #000;}
     #telaLogin button { padding:12px 60px; background:#fc7a00; border:none; font-weight:bold; cursor:pointer; margin-top:10px; border-radius:4px; }
 
     #appContainer { display:none; max-width: auto; margin: auto; background: #fff; border: 2px solid #000; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
@@ -33,7 +40,11 @@
     .btns { display: flex; justify-content: center; padding: 20px; gap: 20px; background: #eee; }
     .btn-salvar { background: #fc7a00; padding: 15px 30px; font-size: 18px; font-weight: bold; cursor: pointer; }
     .btn-logout{background:#ff4444; color:#fff; border:2px solid #000; border-radius:6px; font-size: 12px !important; padding: 5px 15px !important;}
-
+.footer {color:#fff;
+  text-align: center;
+  font-size: 11px;
+  margin-top: 10px;
+}
 </style>
 </head>
 <body>
@@ -125,7 +136,7 @@ function gerarHTMLFormulario(p) {
 
         <div class="grid-resumo">
             <div class="box">Observações:<br><textarea id="${p}_obs" style="width:95%; height:40px;"></textarea></div>
-            <div class="box" style="text-align:center">Indumentária: Os descontos de seguem orientação dos Art. 19 §1º e §2º do Regulamento<br><input type="text" id="${p}_indum" data-max="2" value="0,00" style="width:40px;" onblur="validar(this,'${p}')"></div>
+            <div class="box" style="text-align:center">Indumentária: Os descontos de seguem orientação dos Art. 19 §1º e §2º do Regulamento (ENART)<br><input type="text" id="${p}_indum" data-max="2" value="0,00" style="width:40px;" onblur="validar(this,'${p}')"></div>
             <div class="box">TOTAL FINAL<div class="nota-destaque" id="${p}_notaFinal">0,00</div></div>
         </div>
          <div class="box"style="text-align:center">USO DE ESPORAS?</strong> <input type="checkbox" id="${p}_esporas"> Sim</div>
@@ -201,7 +212,7 @@ function salvarDupla() {
 
     const btnFinal = document.getElementById("btnFinal");
     btnFinal.disabled = true;
-    btnFinal.innerText = "ENVIANDO AO GOOGLE SHEETS...";
+    btnFinal.innerText = "ENVIANDO DADOS...";
 
     let payload = ['c1','c2'].map(p => {
         let perdasDet = [];
@@ -342,6 +353,9 @@ window.onload = () => {
     document.getElementById('aba2').innerHTML = gerarHTMLFormulario('c2');
 };
 </script>
-    
+    <div class="footer">
+Sistema de Avaliação - Produzido por NossoEventoRS © - Conforme Regulamento Artístico do MTG & ENART (2025)
+</div>
+
 </body>
 </html>
